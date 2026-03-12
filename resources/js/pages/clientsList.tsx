@@ -90,15 +90,16 @@ export default function RecordFinder({ patients = [], filters }: Props) {
                             <input
                                 type="text"
                                 value={searchData.last}
-
                                 onChange={(e) => {
-                                    const value = e.target.value.replace(/[0-9]/g, '');
+                                    const value = e.target.value.replace(
+                                        /[0-9]/g,
+                                        '',
+                                    );
                                     setSearchData({
                                         ...searchData,
                                         last: value,
-                                    })
+                                    });
                                 }}
-
                                 className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900 uppercase outline-none focus:border-blue-500"
                             />
                         </div>
@@ -111,13 +112,15 @@ export default function RecordFinder({ patients = [], filters }: Props) {
                             <input
                                 type="text"
                                 value={searchData.first}
-                                
                                 onChange={(e) => {
-                                    const value = e.target.value.replace(/[0-9]/g, '');
+                                    const value = e.target.value.replace(
+                                        /[0-9]/g,
+                                        '',
+                                    );
                                     setSearchData({
                                         ...searchData,
                                         first: value,
-                                    })
+                                    });
                                 }}
                                 className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900 uppercase outline-none focus:border-blue-500"
                             />
@@ -132,11 +135,14 @@ export default function RecordFinder({ patients = [], filters }: Props) {
                                 type="text"
                                 value={searchData.mid}
                                 onChange={(e) => {
-                                    const value = e.target.value.replace(/[0-9]/g, '');
+                                    const value = e.target.value.replace(
+                                        /[0-9]/g,
+                                        '',
+                                    );
                                     setSearchData({
                                         ...searchData,
                                         mid: value,
-                                    })
+                                    });
                                 }}
                                 className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900 uppercase outline-none focus:border-blue-500"
                             />
