@@ -147,7 +147,7 @@ export default function RecordFinder({ patients = [], filters }: Props) {
                                     searchData.hrn.length > 0 ? 'text-orange-500' : 'text-slate-400'
                                 }`}>
                                     {searchData.hrn.length}/{MAX_LENGTH}
-                                </span>
+                                </span>     
                             </div>
                         </div>
 
