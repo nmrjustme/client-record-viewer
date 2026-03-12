@@ -78,9 +78,9 @@ export default function PatientPage({ patients = [], filters }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Patients" />
 
-            <div className="min-h-screen bg-slate-100 p-4 font-sans">
+            <div className="min-h-screen bg-slate-100 p-4 font-sans transition-colors dark:bg-slate-900">
                 {/* Search Section */}
-                <section className="mb-8 rounded-xl border border-slate-300 bg-white p-6 shadow-sm">
+                <section className="mb-8 rounded-xl border border-slate-300 bg-white p-6 shadow-sm transition-colors dark:border-slate-700 dark:bg-slate-800">
                     <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-5">
                         {/* HRN */}
                         <div>
@@ -100,7 +100,7 @@ export default function PatientPage({ patients = [], filters }: Props) {
                                         });
                                     }
                                 }}
-                                className="w-full rounded-md border border-blue-100 bg-blue-50 px-3 py-1.5 font-mono text-sm text-blue-800 outline-none focus:border-blue-500"
+                                className="w-full rounded-md border border-blue-100 bg-blue-50 px-3 py-1.5 font-mono text-sm text-blue-800 transition-colors outline-none focus:border-blue-500 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
                             />
                         </div>
 
@@ -122,7 +122,7 @@ export default function PatientPage({ patients = [], filters }: Props) {
                                         last: value,
                                     });
                                 }}
-                                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900 uppercase outline-none focus:border-blue-500"
+                                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900 transition-colors outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
                             />
                         </div>
 
@@ -144,7 +144,7 @@ export default function PatientPage({ patients = [], filters }: Props) {
                                         first: value,
                                     });
                                 }}
-                                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900 uppercase outline-none focus:border-blue-500"
+                                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900 transition-colors outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
                             />
                         </div>
 
@@ -166,13 +166,13 @@ export default function PatientPage({ patients = [], filters }: Props) {
                                         mid: value,
                                     });
                                 }}
-                                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900 uppercase outline-none focus:border-blue-500"
+                                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900 transition-colors outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
                             />
                         </div>
 
                         {/* Buttons */}
                         <div className="flex gap-1.5">
-                            {/* Submit Add Patient */}
+                            {/* Add Patient */}
                             <button
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -186,7 +186,6 @@ export default function PatientPage({ patients = [], filters }: Props) {
                                         },
                                         {
                                             onSuccess: () => {
-                                                // Clear form after submission
                                                 setSearchData({
                                                     hrn: '',
                                                     last: '',
@@ -197,22 +196,15 @@ export default function PatientPage({ patients = [], filters }: Props) {
                                         },
                                     );
                                 }}
-                                className="flex-1 cursor-pointer rounded-md bg-blue-800 py-2 font-montserrat text-xs text-white transition-all hover:bg-blue-700"
+                                className="flex-1 cursor-pointer rounded-md bg-blue-800 py-2 font-montserrat text-xs text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
                             >
                                 Add Patient
                             </button>
 
-                            {/* Clear inputs */}
+                            {/* Clear Inputs */}
                             <button
-                                onClick={() =>
-                                    setSearchData({
-                                        hrn: '',
-                                        last: '',
-                                        first: '',
-                                        mid: '',
-                                    })
-                                }
-                                className="cursor-pointer rounded-md bg-slate-200 px-3 py-2 font-montserrat text-xs text-slate-600 transition-all hover:bg-slate-300"
+                                onClick={handleClear}
+                                className="cursor-pointer rounded-md bg-slate-200 px-3 py-2 font-montserrat text-xs text-slate-600 transition-colors hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
                             >
                                 Clear
                             </button>
@@ -221,14 +213,14 @@ export default function PatientPage({ patients = [], filters }: Props) {
                 </section>
 
                 {/* Table Section */}
-                <section className="overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm">
-                    <div className="border-b bg-slate-50/50 px-8 py-3">
-                        <h3 className="font-montserrat text-sm text-slate-700">
+                <section className="overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-slate-800">
+                    <div className="border-b bg-slate-50/50 px-8 py-3 transition-colors dark:bg-slate-700/50">
+                        <h3 className="font-montserrat text-sm text-slate-700 dark:text-slate-200">
                             Displaying {patients.length} Patient(s)
                         </h3>
                     </div>
                     <table className="w-full text-left">
-                        <thead className="bg-slate-50 font-montserrat text-[10px] tracking-widest text-slate-400 uppercase">
+                        <thead className="bg-slate-50 font-montserrat text-[10px] tracking-widest text-slate-400 uppercase transition-colors dark:bg-slate-700 dark:text-slate-300">
                             <tr>
                                 <th className="px-8 py-3">HRN</th>
                                 <th className="px-8 py-3">Patient Name</th>
@@ -236,28 +228,28 @@ export default function PatientPage({ patients = [], filters }: Props) {
                                 <th className="px-8 py-3 text-right">Action</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-slate-100 transition-colors dark:divide-slate-700">
                             {patients.length > 0 ? (
                                 patients.map((p) => (
                                     <tr
                                         key={p.id}
-                                        className="hover:bg-blue-50/30"
+                                        className="transition-colors hover:bg-blue-50/30 dark:hover:bg-slate-700/50"
                                     >
-                                        <td className="px-8 py-4 font-montserrat text-xs text-blue-600">
+                                        <td className="px-8 py-4 font-montserrat text-xs text-blue-600 dark:text-blue-400">
                                             {p.hrn}
                                         </td>
-                                        <td className="px-8 py-4 font-montserrat text-sm text-slate-900 capitalize">
+                                        <td className="px-8 py-4 font-montserrat text-slate-900 capitalize dark:text-slate-100">
                                             {p.lastname}, {p.firstname}{' '}
                                             {p.middlename || ''}
                                         </td>
                                         <td className="px-8 py-4 text-center">
-                                            <span className="rounded bg-slate-100 px-2 py-1 font-montserrat text-[10px] text-slate-600">
+                                            <span className="rounded bg-slate-100 px-2 py-1 font-montserrat text-[10px] text-slate-600 transition-colors dark:bg-slate-700 dark:text-slate-300">
                                                 📄 {p.records_count} PDF(s)
                                             </span>
                                         </td>
                                         <td className="px-8 py-4 text-right">
-                                            <button className="cursor-pointer font-montserrat text-xs text-blue-600 hover:underline">
-                                                View Folder →
+                                            <button className="cursor-pointer font-montserrat text-xs text-blue-600 hover:underline dark:text-blue-400">
+                                                View File →
                                             </button>
                                         </td>
                                     </tr>
@@ -266,7 +258,7 @@ export default function PatientPage({ patients = [], filters }: Props) {
                                 <tr>
                                     <td
                                         colSpan={4}
-                                        className="py-10 text-center font-montserrat text-xs text-slate-400"
+                                        className="py-10 text-center font-montserrat text-xs text-slate-400 dark:text-slate-500"
                                     >
                                         No patients found.
                                     </td>
@@ -275,11 +267,12 @@ export default function PatientPage({ patients = [], filters }: Props) {
                         </tbody>
                     </table>
                 </section>
+
                 {/* Modal for Add Patient */}
                 {modalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                        <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg">
-                            <h2 className="mb-4 font-montserrat text-lg text-slate-800">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-colors">
+                        <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg transition-colors dark:bg-slate-800 dark:text-white">
+                            <h2 className="mb-4 font-montserrat text-lg text-slate-800 dark:text-slate-100">
                                 Add Patient
                             </h2>
                             <form
@@ -296,7 +289,7 @@ export default function PatientPage({ patients = [], filters }: Props) {
                                             hrn: e.target.value,
                                         })
                                     }
-                                    className="w-full rounded-md border px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+                                    className="w-full rounded-md border px-3 py-1.5 text-sm transition-colors outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
                                     required
                                 />
                                 <input
@@ -309,7 +302,7 @@ export default function PatientPage({ patients = [], filters }: Props) {
                                             lastname: e.target.value,
                                         })
                                     }
-                                    className="w-full rounded-md border px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+                                    className="w-full rounded-md border px-3 py-1.5 text-sm transition-colors outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
                                     required
                                 />
                                 <input
@@ -322,7 +315,7 @@ export default function PatientPage({ patients = [], filters }: Props) {
                                             firstname: e.target.value,
                                         })
                                     }
-                                    className="w-full rounded-md border px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+                                    className="w-full rounded-md border px-3 py-1.5 text-sm transition-colors outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
                                     required
                                 />
                                 <input
@@ -335,19 +328,19 @@ export default function PatientPage({ patients = [], filters }: Props) {
                                             middlename: e.target.value,
                                         })
                                     }
-                                    className="w-full rounded-md border px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+                                    className="w-full rounded-md border px-3 py-1.5 text-sm transition-colors outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
                                 />
                                 <div className="flex justify-end gap-2 pt-2">
                                     <button
                                         type="button"
                                         onClick={() => setModalOpen(false)}
-                                        className="rounded-md bg-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-300"
+                                        className="rounded-md bg-slate-200 px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
-                                        className="rounded-md bg-blue-800 px-4 py-2 text-sm text-white hover:bg-blue-700"
+                                        className="rounded-md bg-blue-800 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
                                     >
                                         Save
                                     </button>
