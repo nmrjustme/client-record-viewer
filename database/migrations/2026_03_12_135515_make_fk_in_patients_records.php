@@ -11,12 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('patients_records', function (Blueprint $table) {
-            $table->id();
-            $table->string('hrn_patients', 50)->unique();
-            $table->string('file_name');
-            $table->timestamps();
-            
+        Schema::table('patients_records', function (Blueprint $table) {
             $table->foreign('hrn_patients')->references('hrn')->on('patients');
         });
     }
@@ -26,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('patients_records');
+        Schema::table('patients_records', function (Blueprint $table) {
+            //
+        });
     }
 };
