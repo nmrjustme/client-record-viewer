@@ -38,4 +38,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
+Route::prefix('/viewer')->name('patients.')->group(function () {
+    Route::get('/record-finder', [patientsController::class, 'index']);
+    Route::get('/{hrn}/folder', [patientsController::class, 'getFiles']);
+});
+
+
 require __DIR__.'/settings.php';

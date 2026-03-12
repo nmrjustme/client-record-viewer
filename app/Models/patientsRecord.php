@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class patientsRecord extends Model
 {
@@ -13,8 +14,8 @@ class patientsRecord extends Model
         'file_name'
     ];
 
-    public function patient()
+    public function patients()
     {
-        return $this->belongsTo(patientsRecord::class);
+        return $this->BelongsTo(patients::class, 'hrn_patients', 'hrn');
     }
 }
