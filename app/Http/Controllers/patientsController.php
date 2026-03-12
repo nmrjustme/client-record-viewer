@@ -17,14 +17,14 @@ class patientsController extends Controller
             ->when($request->last, fn($q, $v) => $q->where('lastname', 'like', "%$v%"))
             ->when($request->mid, fn($q, $v) => $q->where('middlename', 'like', "%$v%"))
             ->when($request->hrn, fn($q, $v) => $q->where('hrn', 'like', "%$v%"));
-        
+
         return Inertia::render('clientsList', [
             // Ensuring an empty array is sent if no data exists to prevent .map() errors
             'patients' => $query->latest()->get() ?? [],
             'filters' => $request->only(['first', 'last', 'mid', 'hrn']),
         ]);
     }
-    
+
     public function getFiles($hrn)
     {
         $files = patients::with(['records' => function ($query) {
@@ -32,7 +32,7 @@ class patientsController extends Controller
         }])
         ->where('hrn', $hrn)
         ->firstorFail();
-        
+
         return Inertia::render('PatientFolder', [
             'patient' => $files
         ]);
