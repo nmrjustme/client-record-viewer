@@ -27,6 +27,11 @@ const mainNavItems: NavItem[] = [
         href: patient(),
         icon: User,
     },
+    {
+        title: 'Patient Records',
+        href: '/record_finder',
+        icon: User,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
