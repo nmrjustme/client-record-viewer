@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import { patient } from '@/routes';
+import type { BreadcrumbItem } from '@/types';
 
 interface Patient {
     id: number;
@@ -12,10 +15,17 @@ interface Patient {
 
 interface Props {
     patients: Patient[];
-    filters: any;
+    filters?: any;
 }
 
-export default function RecordFinder({ patients = [], filters }: Props) {
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Patient',
+        href: patient(),
+    },
+];
+
+export default function PatientPage({ patients = [], filters }: Props) {
     const [searchData, setSearchData] = useState({
         first: filters?.first || '',
         last: filters?.last || '',
@@ -23,8 +33,17 @@ export default function RecordFinder({ patients = [], filters }: Props) {
         hrn: filters?.hrn || '',
     });
 
+    const [modalOpen, setModalOpen] = useState(false);
+    const [formData, setFormData] = useState({
+        hrn: '',
+        firstname: '',
+        middlename: '',
+        lastname: '',
+    });
+
+    // Search (filter) patients
     const handleSearch = () => {
-        router.get('/record-finder', searchData, {
+        router.get('/patient', searchData, {
             preserveState: true,
             replace: true,
         });
@@ -33,34 +52,37 @@ export default function RecordFinder({ patients = [], filters }: Props) {
     const handleClear = () => {
         const clearedData = { first: '', last: '', mid: '', hrn: '' };
         setSearchData(clearedData);
-        router.get('/record-finder', clearedData, {
+        router.get('/patient', clearedData, {
             preserveState: true,
             replace: true,
         });
     };
 
+    // Add Patient
+    const handleAddPatient = (e: React.FormEvent) => {
+        e.preventDefault();
+        router.post('/patient', formData, {
+            onSuccess: () => {
+                setModalOpen(false);
+                setFormData({
+                    hrn: '',
+                    firstname: '',
+                    middlename: '',
+                    lastname: '',
+                });
+            },
+        });
+    };
+
     return (
-        <div className="min-h-screen bg-slate-100 font-sans">
-            <Head title="CIMC | Patient Search" />
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Patients" />
 
-            <header className="bg-blue sticky top-0 z-50 flex items-center justify-between border border-slate-300 px-8 py-3 backdrop-blur-md">
-                <h2 className="flex items-center gap-2 font-montserrat text-xl text-slate-800">
-                    <img
-                        src="/images/cimc_logo.png"
-                        alt="CIMC"
-                        className="h-9 w-auto"
-                    />
-                    CIMC Record
-                </h2>
-                <span className="rounded bg-slate-100 px-3 py-1 font-montserrat text-xs text-slate-500">
-                    SECURE ACCESS ONLY
-                </span>
-            </header>
-
-            <main className="mx-auto max-w-6xl p-8">
+            <div className="min-h-screen bg-slate-100 p-4 font-sans">
+                {/* Search Section */}
                 <section className="mb-8 rounded-xl border border-slate-300 bg-white p-6 shadow-sm">
                     <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-5">
-                        {/* HRN - Number Only & 15 Digit Limit */}
+                        {/* HRN */}
                         <div>
                             <label className="mb-1 block font-montserrat text-[10px] tracking-wider text-blue-600 uppercase italic">
                                 HRN (Max 15)
@@ -148,16 +170,48 @@ export default function RecordFinder({ patients = [], filters }: Props) {
                             />
                         </div>
 
-                        {/* Compressed Buttons */}
+                        {/* Buttons */}
                         <div className="flex gap-1.5">
+                            {/* Submit Add Patient */}
                             <button
-                                onClick={handleSearch}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    router.post(
+                                        '/patient',
+                                        {
+                                            hrn: searchData.hrn,
+                                            lastname: searchData.last,
+                                            firstname: searchData.first,
+                                            middlename: searchData.mid,
+                                        },
+                                        {
+                                            onSuccess: () => {
+                                                // Clear form after submission
+                                                setSearchData({
+                                                    hrn: '',
+                                                    last: '',
+                                                    first: '',
+                                                    mid: '',
+                                                });
+                                            },
+                                        },
+                                    );
+                                }}
                                 className="flex-1 cursor-pointer rounded-md bg-blue-800 py-2 font-montserrat text-xs text-white transition-all hover:bg-blue-700"
                             >
-                                Search
+                                Add Patient
                             </button>
+
+                            {/* Clear inputs */}
                             <button
-                                onClick={handleClear}
+                                onClick={() =>
+                                    setSearchData({
+                                        hrn: '',
+                                        last: '',
+                                        first: '',
+                                        mid: '',
+                                    })
+                                }
                                 className="cursor-pointer rounded-md bg-slate-200 px-3 py-2 font-montserrat text-xs text-slate-600 transition-all hover:bg-slate-300"
                             >
                                 Clear
@@ -214,14 +268,95 @@ export default function RecordFinder({ patients = [], filters }: Props) {
                                         colSpan={4}
                                         className="py-10 text-center font-montserrat text-xs text-slate-400"
                                     >
-                                        No results found.
+                                        No patients found.
                                     </td>
                                 </tr>
                             )}
                         </tbody>
                     </table>
                 </section>
-            </main>
-        </div>
+                {/* Modal for Add Patient */}
+                {modalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                        <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg">
+                            <h2 className="mb-4 font-montserrat text-lg text-slate-800">
+                                Add Patient
+                            </h2>
+                            <form
+                                onSubmit={handleAddPatient}
+                                className="space-y-3"
+                            >
+                                <input
+                                    type="text"
+                                    placeholder="HRN"
+                                    value={formData.hrn}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            hrn: e.target.value,
+                                        })
+                                    }
+                                    className="w-full rounded-md border px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+                                    required
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Last Name"
+                                    value={formData.lastname}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            lastname: e.target.value,
+                                        })
+                                    }
+                                    className="w-full rounded-md border px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+                                    required
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="First Name"
+                                    value={formData.firstname}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            firstname: e.target.value,
+                                        })
+                                    }
+                                    className="w-full rounded-md border px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+                                    required
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Middle Name"
+                                    value={formData.middlename}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            middlename: e.target.value,
+                                        })
+                                    }
+                                    className="w-full rounded-md border px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+                                />
+                                <div className="flex justify-end gap-2 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setModalOpen(false)}
+                                        className="rounded-md bg-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-300"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="rounded-md bg-blue-800 px-4 py-2 text-sm text-white hover:bg-blue-700"
+                                    >
+                                        Save
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </AppLayout>
     );
 }
