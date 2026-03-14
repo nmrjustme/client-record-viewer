@@ -101,6 +101,7 @@ export default function RecordFinder({ patients = [], filters }: Props) {
             {} as any,
         );
         
+
         router.get(`/viewer/record-finder`, filteredData, {
             preserveState: true,
             replace: true,
