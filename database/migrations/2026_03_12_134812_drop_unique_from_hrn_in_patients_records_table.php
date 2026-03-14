@@ -12,10 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('patients_records', function (Blueprint $table) {
-            $table->dropForeign(['hrn_patients']);
-
-            // Drop the unique index
-            $table->dropUnique('patients_records_hrn_patients_unique');
+        
         });
     }
 

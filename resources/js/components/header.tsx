@@ -1,6 +1,6 @@
 export default function Header() {
     return (
-            <header className="sticky top-0 z-50 flex items-center justify-between border-b border-slate-200 bg-white/80 px-8 py-3 backdrop-blur-md">
+            <header className="sticky top-0 z-50 flex items-center justify-between border-b border-slate-400 bg-white/80 px-8 py-3 backdrop-blur-md">
                   <h2 className="flex items-center gap-2 font-montserrat text-xl font-bold text-slate-800">
                   <img
                         src="/images/cimc_logo.png"

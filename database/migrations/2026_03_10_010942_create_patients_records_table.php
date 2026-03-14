@@ -13,11 +13,14 @@ return new class extends Migration
     {
         Schema::create('patients_records', function (Blueprint $table) {
             $table->id();
-            $table->string('hrn_patients', 50)->unique();
-            $table->string('file_name');
+            $table->unsignedBigInteger('patients_id');
+            $table->string('record_type');
+            $table->text('description')->nullable();
+            $table->unsignedBigInteger('created_by');
             $table->timestamps();
             
-            $table->foreign('hrn_patients')->references('hrn')->on('patients');
+            $table->foreign('patients_id')->references('id')->on('patients')->onDelete('cascade');
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('patients_records', function (Blueprint $table) {
-            $table->foreign('hrn_patients')->references('hrn')->on('patients');
         });
     }
 

@@ -8,14 +8,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class patientsRecord extends Model
 {
     protected $table = 'patients_records';
-
+    
     protected $fillable = [
-        'hrn_patients',
-        'file_name'
+        'patients_id',
+        'record_type',
+        'description',
+        'created_by'
     ];
-
+    
+    public function file()
+    {
+        return $this->hasMany(PatientsRecordsFileModel::class, 'records_id');
+    }
+    
     public function patients()
     {
-        return $this->BelongsTo(patients::class, 'hrn_patients', 'hrn');
+        return $this->BelongsTo(patients::class, 'patients_id');
     }
 }

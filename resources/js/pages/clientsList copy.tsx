@@ -1,232 +1,298 @@
-import React, { useState } from 'react';
-import { Head, router, Link } from '@inertiajs/react';
+import React from 'react';
+import { Head, Link } from '@inertiajs/react';
 import Header from '@/components/header';
 
-interface Patient {
+interface FileRecord {
     id: number;
+    file_name: string;
+    created_at: string;
+    updated_at: string; // Added updated_at
+}
+
+interface Patient {
     hrn: string;
     firstname: string;
-    middlename: string | null;
     lastname: string;
-    records_count: number;
+    middlename: string;
+    records: FileRecord[];
 }
 
-interface Props {
-    patients: Patient[];
-    filters: any;
-}
-
-export default function RecordFinder({ patients = [], filters }: Props) {
-    const [isLoading, setIsLoading] = useState(false);
-    
-    // Configuration
-    const MAX_LENGTH = 15;
-    const INITIAL_HRN = "00000000";
-
-    const [searchType, setSearchType] = useState<'hrn' | 'personal'>(filters?.hrn ? 'hrn' : 'personal');
-
-    const [searchData, setSearchData] = useState({
-        first: filters?.first || '',
-        last: filters?.last || '',
-        mid: filters?.mid || '',
-        hrn: filters?.hrn || INITIAL_HRN,
-    });
-
-    const handleSearch = () => {
-        setIsLoading(true);
-        
-        // AUTO-FILL LOGIC: If the user typed less than 15 digits, 
-        // we pad it with leading zeros automatically on search.
-        const finalHrn = searchType === 'hrn' 
-            ? searchData.hrn.padStart(MAX_LENGTH, '0') 
-            : '';
-
-        const dataToSend = searchType === 'hrn' 
-            ? { hrn: finalHrn } 
-            : { first: searchData.first, last: searchData.last, mid: searchData.mid };
-
-        router.get(`/viewer/record-finder`, dataToSend, {
-            preserveState: true,
-            replace: true,
-            onFinish: () => setIsLoading(false),
-        });
+export default function PatientFolder({ patient }: { patient: Patient }) {
+    // 1. Identify the latest file based on the NEWEST of either created_at or updated_at
+    const getLatestTime = (file: FileRecord) => {
+        const created = new Date(file.created_at).getTime();
+        const updated = new Date(file.updated_at).getTime();
+        return Math.max(created, updated);
     };
 
-    const handleClear = () => {
-        setIsLoading(true);
-        const clearedData = { first: '', last: '', mid: '', hrn: INITIAL_HRN };
-        setSearchData(clearedData);
-        router.get(`/viewer/record-finder`, clearedData, {
-            preserveState: true,
-            replace: true,
-            onFinish: () => setIsLoading(false),
-        });
-    };
+    const latestFile =
+        patient.records.length > 0
+            ? [...patient.records].sort(
+                  (a, b) => getLatestTime(b) - getLatestTime(a),
+              )[0]
+            : null;
 
-    const SkeletonRow = () => (
-        <tr className="animate-pulse">
-            <td className="px-8 py-4"><div className="h-4 w-24 rounded bg-slate-200"></div></td>
-            <td className="px-8 py-4"><div className="h-4 w-48 rounded bg-slate-200"></div></td>
-            <td className="px-8 py-4 text-center"><div className="mx-auto h-5 w-12 rounded bg-slate-200"></div></td>
-            <td className="px-8 py-4 text-right"><div className="ml-auto h-4 w-20 rounded bg-slate-200"></div></td>
-        </tr>
+    // 2. Filter out the latest file from the archive grid
+    const otherFiles = patient.records.filter(
+        (file) => file.id !== latestFile?.id,
     );
 
     return (
-        <div className="min-h-screen bg-slate-100 font-sans">
-            <Head title="CIMC | Patient Search" />
+        <div className="min-h-screen bg-slate-50">
+            <Head title={`${patient.lastname}'s File`} />
             <Header />
 
-            <main className="mx-auto max-w-6xl p-8">
-                <section className="mb-8 rounded-xl border border-slate-300 bg-white p-6 shadow-sm">
-                    
-                    {/* Search Type Tabs */}
-                    <div className="mb-6 flex gap-6 border-b border-slate-100 pb-2">
-                        <button 
-                            onClick={() => setSearchType('hrn')}
-                            className={`pb-2 text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer ${searchType === 'hrn' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            Hospital Record No.
-                        </button>
-                        <button 
-                            onClick={() => setSearchType('personal')}
-                            className={`pb-2 text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer ${searchType === 'personal' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            Personal Information
-                        </button>
-                    </div>
+            <main className="mx-auto max-w-5xl p-8">
+                <Link
+                    href={`/viewer/record-finder`}
+                    className="mb-6 inline-flex items-center gap-2 font-montserrat text-sm font-normal text-slate-500 transition-colors hover:text-blue-600"
+                >
+                    ← Back to Search
+                </Link>
 
-                    <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-12">
-                        {searchType === 'hrn' ? (
-                            <div className="md:col-span-10">
-                                <label className="mb-1 block font-montserrat text-[10px] font-bold tracking-wider text-blue-600 uppercase italic">
-                                    Hospital Record No.
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        value={searchData.hrn}
-                                        onFocus={(e) => e.target.select()}
-                                        onChange={(e) => {
-                                            const val = e.target.value.replace(/\D/g, ''); 
-                                            if (val.length <= MAX_LENGTH) {
-                                                setSearchData({ ...searchData, hrn: val });
-                                            }
-                                        }}
-                                        // On blur, if they left it empty, put the 8 zeros back
-                                        onBlur={() => {
-                                            if (searchData.hrn === '') setSearchData({...searchData, hrn: INITIAL_HRN});
-                                        }}
-                                        className="w-full rounded-md border border-blue-100 bg-blue-50 px-3 py-2 font-mono text-sm tracking-[0.3em] text-blue-800 outline-none focus:border-blue-500"
-                                    />
-                                    <div className="mt-1 flex justify-between px-1">
-                                        <span className="font-montserrat text-[9px] text-slate-400 uppercase">
-                                            {searchData.hrn.length < MAX_LENGTH ? 'Will auto-pad with zeros' : 'Full length reached'}
+                <div className="mb-8 flex items-end justify-between border-b border-slate-200 pb-6">
+                    <div>
+                        <div className="flex flex-wrap gap-x-8 gap-y-4">
+                            {/* Last Name */}
+                            <div className="flex flex-col">
+                                <h1 className="font-montserrat text-3xl leading-none font-bold text-slate-900 capitalize">
+                                    {patient.lastname}
+                                </h1>
+                                <div className="mt-1 h-px w-full bg-slate-300" />{' '}
+                                {/* The Divider Line */}
+                                <span className="mt-1 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                                    Lastname
+                                </span>
+                            </div>
+
+                            {/* First Name */}
+                            <div className="flex flex-col">
+                                <h1 className="font-montserrat text-3xl leading-none font-bold text-slate-900 capitalize">
+                                    {patient.firstname}
+                                </h1>
+                                <div className="mt-1 h-px w-full bg-slate-300" />
+                                <span className="mt-1 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                                    Firstname
+                                </span>
+                            </div>
+
+                            {/* Middle Name */}
+                            {patient.middlename && (
+                                <div className="flex flex-col">
+                                    <h1 className="font-montserrat text-3xl leading-none font-bold text-slate-900 capitalize">
+                                        {patient.middlename}
+                                    </h1>
+                                    <div className="mt-1 h-px w-full bg-slate-300" />
+                                    <span className="mt-1 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                                        Middlename
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                        <p className="mt-2 font-montserrat text-sm font-normal tracking-widest text-slate-500 uppercase">
+                            HRN:
+                            <span className="ml-2 font-mono font-normal text-blue-600">
+                                {patient.hrn}
+                            </span>
+                        </p>
+                    </div>
+                    <div className="text-right">
+                        <span className="rounded-full bg-blue-100 px-4 py-1 font-montserrat text-xs font-semibold text-blue-700">
+                            {patient.records.length} Documents
+                        </span>
+                    </div>
+                </div>
+
+                {/* --- LATEST UPDATE SECTION --- */}
+                {latestFile && (
+                    <section className="mb-12">
+                        <h3 className="mb-4 font-montserrat text-[10px] font-semibold tracking-[0.2em] text-blue-600 uppercase">
+                            Most Recent Activity
+                        </h3>
+
+                        <div className="group relative flex items-center gap-6 rounded-2xl border-1 border-blue-400 bg-white p-6 transition-all">
+                            <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-xl transition-colors">
+                                <img
+                                    src="/images/pdf.png"
+                                    alt="Document Icon"
+                                    className="h-20 w-20 text-current transition-colors"
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="font-montserrat text-lg font-bold text-slate-900">
+                                    {latestFile.file_name}
+                                </h4>
+                                <div className="mt-2 flex flex-col gap-y-2 border-l-2 border-slate-100 pl-3">
+                                    <div className="flex items-center gap-x-2 text-[11px] font-bold tracking-widest text-slate-400 uppercase">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />{' '}
+                                        <span className="font-montserrat font-semibold">
+                                            Created
                                         </span>
-                                        <span className={`font-montserrat text-[9px] font-bold uppercase ${searchData.hrn.length >= MAX_LENGTH ? 'text-green-500' : 'text-blue-500'}`}>
-                                            {Math.max(0, MAX_LENGTH - searchData.hrn.length)} digits to reach 15
+                                        <span className="font-mono text-slate-500">
+                                            {new Date(
+                                                latestFile.created_at,
+                                            ).toLocaleDateString(undefined, {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric',
+                                            })}
+                                            <span className="px-2 text-slate-300">
+                                                |
+                                            </span>
+                                            <span>
+                                                (
+                                                {new Date(
+                                                    latestFile.created_at,
+                                                ).toLocaleDateString()}
+                                                )
+                                            </span>
                                         </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-x-2 text-[11px] font-bold tracking-widest text-blue-600 uppercase">
+                                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500" />{' '}
+                                        <span className="font-montserrat font-semibold">
+                                            Updated
+                                        </span>
+                                        <div className="flex items-center gap-x-2">
+                                            <span className="font-mono">
+                                                {new Date(
+                                                    latestFile.updated_at,
+                                                ).toLocaleString(undefined, {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                })}
+                                                <span className="px-2 text-slate-300">
+                                                    |
+                                                </span>
+                                                <span>
+                                                    (
+                                                    {new Date(
+                                                        latestFile.updated_at,
+                                                    ).toLocaleDateString()}
+                                                    )
+                                                </span>
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        ) : (
-                            <>
-                                <div className="md:col-span-3">
-                                    <label className="mb-1 block font-montserrat text-[10px] font-bold tracking-wider text-slate-500 uppercase">Last Name</label>
-                                    <input
-                                        type="text"
-                                        value={searchData.last}
-                                        onChange={(e) => setSearchData({ ...searchData, last: e.target.value.replace(/[0-9]/g, '') })}
-                                        className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 uppercase outline-none focus:border-blue-500"
-                                    />
-                                </div>
-                                <div className="md:col-span-4">
-                                    <label className="mb-1 block font-montserrat text-[10px] font-bold tracking-wider text-slate-500 uppercase">First Name</label>
-                                    <input
-                                        type="text"
-                                        value={searchData.first}
-                                        onChange={(e) => setSearchData({ ...searchData, first: e.target.value.replace(/[0-9]/g, '') })}
-                                        className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 uppercase outline-none focus:border-blue-500"
-                                    />
-                                </div>
-                                <div className="md:col-span-3">
-                                    <label className="mb-1 block font-montserrat text-[10px] font-bold tracking-wider text-slate-500 uppercase">Middle Name</label>
-                                    <input
-                                        type="text"
-                                        value={searchData.mid}
-                                        onChange={(e) => setSearchData({ ...searchData, mid: e.target.value.replace(/[0-9]/g, '') })}
-                                        className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 uppercase outline-none focus:border-blue-500"
-                                    />
-                                </div>
-                            </>
-                        )}
-
-                        <div className="flex gap-2 md:col-span-2">
-                            <button
-                                onClick={handleSearch}
-                                disabled={isLoading}
-                                className="flex-1 cursor-pointer rounded-md bg-blue-800 py-2 font-montserrat text-xs font-bold text-white transition-all hover:bg-blue-700"
+                            <a
+                                href={`/view-record/${latestFile.file_name}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center rounded-md bg-blue-800 px-6 py-3 font-montserrat text-xs font-normal text-white transition-all hover:bg-blue-700 active:scale-95"
                             >
-                                {isLoading ? '...' : 'SEARCH'}
-                            </button>
-                            <button
-                                onClick={handleClear}
-                                className="cursor-pointer rounded-md bg-slate-200 px-3 py-2 font-montserrat text-xs text-slate-600 hover:bg-slate-300"
-                            >
-                                ✕
-                            </button>
+                                OPEN FILE
+                            </a>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                )}
 
-                {/* Table Section */}
-                <section className="overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm">
-                    <div className="border-b bg-slate-50/50 px-8 py-3">
-                        <h3 className="font-montserrat text-sm text-slate-700">
-                            Displaying {patients.length} Patient(s)
-                        </h3>
-                    </div>
-                    <table className="w-full text-left">
-                        <thead className="bg-slate-50 font-montserrat text-[10px] tracking-widest text-slate-400 uppercase">
-                            <tr>
-                                <th className="border-b border-slate-200 px-8 py-3">HRN</th>
-                                <th className="border-b border-slate-200 px-8 py-3">Patient Name</th>
-                                <th className="border-b border-slate-200 px-8 py-3 text-center">Files</th>
-                                <th className="border-b border-slate-200 px-8 py-3 text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {isLoading ? (
-                                <>
-                                    <SkeletonRow /><SkeletonRow /><SkeletonRow />
-                                </>
-                            ) : patients.length > 0 ? (
-                                patients.map((p) => (
-                                    <tr key={p.id} className="transition-colors hover:bg-blue-50/30">
-                                        <td className="px-8 py-4 font-montserrat text-xs font-bold text-blue-600">{p.hrn}</td>
-                                        <td className="px-8 py-4 font-montserrat text-sm font-medium text-slate-900 capitalize">
-                                            {p.lastname}, {p.firstname} {p.middlename || ''}
-                                        </td>
-                                        <td className="px-8 py-4 text-center">
-                                            <span className="rounded bg-slate-100 px-2 py-1 font-montserrat text-[10px] font-bold text-slate-600">
-                                                📄 {p.records_count} PDF(s)
+                {/* --- ARCHIVE SECTION --- */}
+                <section>
+                    <h3 className="mb-4 font-montserrat text-[10px] font-semibold tracking-[0.2em] text-slate-500 uppercase">
+                        Archive List
+                    </h3>
+                    <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-5">
+                        {otherFiles.length > 0 ? (
+                            otherFiles.map((file) => (
+                                <div
+                                    key={file.id}
+                                    className="group relative flex flex-col items-center justify-center rounded-2xl border border-slate-400 bg-white p-6 text-center hover:border-red-500"
+                                >
+                                    {/* The invisible link anchor - covers the whole card */}
+                                    <a
+                                        href={`/view-record/${file.file_name}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="absolute inset-0 z-10"
+                                        aria-label={`View ${file.file_name}`}
+                                    />
+
+                                    {/* Icon Container */}
+                                    <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-xl transition-colors">
+                                        <img
+                                            src="/images/pdf.png"
+                                            alt="Document Icon"
+                                            className="h-15 w-15 text-current transition-colors"
+                                        />
+                                    </div>
+
+                                    {/* File Name */}
+                                    <h4 className="line-clamp-2 min-h-[2.5rem] w-full px-2 font-montserrat text-sm leading-tight font-bold text-slate-700 transition-colors group-hover:text-red-600">
+                                        {file.file_name}
+                                    </h4>
+
+                                    {/* Metadata */}
+                                    <div className="mt-3 flex w-full items-center justify-center gap-2 border-t border-slate-100 pt-3">
+                                        <div className="flex flex-col items-center">
+                                            {/* Label */}
+                                            <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                                                Created
                                             </span>
-                                        </td>
-                                        <td className="px-8 py-4 text-right">
-                                            <Link href={`/viewer/${p.hrn}/folder`} className="cursor-pointer font-montserrat text-xs font-bold text-blue-600 hover:underline">
-                                                View File →
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={4} className="py-20 text-center font-montserrat text-xs text-slate-400">No results found.</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                            
+                                            {/* Primary Date (Formatted) */}
+                                            <p className="font-mono text-xs font-semibold text-slate-600">
+                                                {new Date(
+                                                    file.created_at,
+                                                ).toLocaleDateString(
+                                                    undefined,
+                                                    {
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        year: 'numeric',
+                                                    },
+                                                )}
+                                            </p>
+                                            
+                                            {/* Secondary Info (Full Numeric Date) */}
+                                            <span className="text-[10px] font-medium text-slate-400/80">
+                                                (
+                                                {new Date(
+                                                    file.created_at,
+                                                ).toLocaleDateString()}
+                                                )
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Floating "Open" Action (Visual Cue) */}
+                                    <div className="absolute top-3 right-3 opacity-0 transition-opacity group-hover:opacity-100">
+                                        <svg
+                                            className="h-4 w-4 text-red-500"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d=" orbit-10 10 0 11-20 0 10 10 0 0120 0zM15 9l-6 6m0-6l6 6"
+                                            />
+                                            {/* Or use a simple external link icon */}
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                            />
+                                        </svg>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="col-span-full rounded-2xl border-2 border-dashed border-slate-200 py-10 text-center">
+                                <p className="text-sm text-slate-400">
+                                    No other documents found.
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </section>
             </main>
         </div>

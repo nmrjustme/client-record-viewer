@@ -8,10 +8,10 @@ class patients extends Model
 {
     protected $table = 'patients';
     protected $fillable = [
-        'hrn', 'firstname', 'middlename', 'lastname'
+        'hrn', 'firstname', 'middlename', 'lastname', 'created_by'
     ];
-
+    
     public function records() {
-        return $this->hasMany(patientsRecord::class, 'hrn_patients', 'hrn');
+        return $this->hasMany(patientsRecord::class, 'patients_id');
     }
 }
