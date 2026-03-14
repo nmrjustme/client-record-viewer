@@ -16,6 +16,23 @@ interface Props {
     filters: any;
 }
 
+const SkeletonRow = () => (
+    <tr className="animate-pulse">
+        <td className="px-8 py-4">
+            <div className="h-4 w-24 rounded bg-slate-200"></div>
+        </td>
+        <td className="px-8 py-4">
+            <div className="h-4 w-48 rounded bg-slate-200"></div>
+        </td>
+        <td className="px-8 py-4 text-center">
+            <div className="mx-auto h-5 w-12 rounded bg-slate-200"></div>
+        </td>
+        <td className="px-8 py-4 text-right">
+            <div className="ml-auto h-4 w-20 rounded bg-slate-200"></div>
+        </td>
+    </tr>
+);
+
 export default function RecordFinder({ patients = [], filters }: Props) {
     const [isLoading, setIsLoading] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -74,10 +91,16 @@ export default function RecordFinder({ patients = [], filters }: Props) {
             mid: searchData.mid,
         };
 
-        const filteredData = Object.fromEntries(
-            Object.entries(dataToSend).filter(([, v]) => v !== ''),
+        const filteredData = Object.entries(dataToSend).reduce(
+            (acc, [key, value]) => {
+                if (value !== '') {
+                    acc[key] = value;
+                }
+                return acc;
+            },
+            {} as any,
         );
-
+        
         router.get(`/viewer/record-finder`, filteredData, {
             preserveState: true,
             replace: true,
@@ -107,23 +130,6 @@ export default function RecordFinder({ patients = [], filters }: Props) {
             },
         );
     };
-
-    const SkeletonRow = () => (
-        <tr className="animate-pulse">
-            <td className="px-8 py-4">
-                <div className="h-4 w-24 rounded bg-slate-200"></div>
-            </td>
-            <td className="px-8 py-4">
-                <div className="h-4 w-48 rounded bg-slate-200"></div>
-            </td>
-            <td className="px-8 py-4 text-center">
-                <div className="mx-auto h-5 w-12 rounded bg-slate-200"></div>
-            </td>
-            <td className="px-8 py-4 text-right">
-                <div className="ml-auto h-4 w-20 rounded bg-slate-200"></div>
-            </td>
-        </tr>
-    );
 
     return (
         <div className="relative min-h-screen bg-slate-100 font-sans text-slate-900">
